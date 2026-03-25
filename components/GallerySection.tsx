@@ -1,42 +1,24 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 
 export function GallerySection() {
   type Slide = {
     src: string
     alt: string
     title: string
-    tag: string
+    tag?: string
   }
 
-  const labelCycle = useMemo(
-    () => [
-      { title: 'Ancient Temples', tag: 'Greece' },
-      { title: 'Island Escapes', tag: 'Thailand' },
-      { title: 'Cultural Heritage', tag: 'Fusion' },
-      { title: 'Luxury Dining', tag: 'Experiences' },
-      { title: 'Serene Temples', tag: 'Thailand' },
-      { title: 'Coastal Paradise', tag: 'Exploration' },
-    ],
-    [],
-  )
-
-  const [slides, setSlides] = useState<Slide[]>([
-    {
-      src: '/hero-greece.jpg',
-      alt: 'Greek heritage',
-      title: 'Ancient Temples',
-      tag: 'Greece',
-    },
-    {
-      src: '/hero-thailand.jpg',
-      alt: 'Thai temples',
-      title: 'Island Escapes',
-      tag: 'Thailand',
-    },
-  ])
+  // Exactly 5 CDN-style images (stored in `public/after-hero/` for reliable serving).
+  const slides: Slide[] = [
+    { src: '/after-hero/1.png', alt: 'Thailand island view', title: 'Slide 1', tag: 'Thailand' },
+    { src: '/after-hero/2.png', alt: 'Thailand temples view', title: 'Slide 2', tag: 'Thailand' },
+    { src: '/after-hero/3.png', alt: 'Thailand beach sunset', title: 'Slide 3', tag: 'Thailand' },
+    { src: '/after-hero/4.png', alt: 'Tropical sea landscape', title: 'Slide 4', tag: 'Thailand' },
+    { src: '/after-hero/5.png', alt: 'Beach and boat view', title: 'Slide 5', tag: 'Thailand' },
+  ]
 
   const [activeIndex, setActiveIndex] = useState(0)
   const activeSlide = slides[activeIndex] ?? slides[0]
@@ -58,39 +40,6 @@ export function GallerySection() {
       if (!len) return 0
       return (i + 1) % len
     })
-
-  useEffect(() => {
-    let cancelled = false
-    async function load() {
-      try {
-        const res = await fetch('/corousal-images.json')
-        if (!res.ok) throw new Error('Failed to load corousal manifest')
-        const files: string[] = await res.json()
-        if (cancelled) return
-
-        const mapped: Slide[] = (files ?? [])
-          .filter((f) => typeof f === 'string' && f.length > 0)
-          .map((file, idx) => {
-            const label = labelCycle[idx % labelCycle.length]
-            return {
-              src: `/corousal/${encodeURIComponent(file)}`,
-              alt: label.title,
-              title: label.title,
-              tag: label.tag,
-            }
-          })
-
-        setSlides(mapped.length ? mapped : [])
-      } catch {
-        // Keep existing fallback slides.
-      }
-    }
-
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [labelCycle])
 
   return (
     <section className="py-32 px-6 bg-white">
@@ -126,17 +75,17 @@ export function GallerySection() {
                 <img
                   src={activeSlide?.src}
                   alt={activeSlide?.alt ?? 'Gallery image'}
-                  className="w-full h-[250px] object-contain bg-white"
+                  className="w-full h-[28vh] min-h-[220px] object-contain bg-white"
                   onError={(e) => {
-                    e.currentTarget.src = '/hero-thailand.jpg'
+                    e.currentTarget.src = slides[0]?.src
                   }}
                 />
                 <img
                   src={nextSlide?.src ?? activeSlide?.src}
                   alt={nextSlide?.alt ?? activeSlide?.alt ?? 'Gallery image'}
-                  className="w-full h-[250px] object-contain bg-white"
+                  className="w-full h-[28vh] min-h-[220px] object-contain bg-white"
                   onError={(e) => {
-                    e.currentTarget.src = '/hero-thailand.jpg'
+                    e.currentTarget.src = slides[0]?.src
                   }}
                 />
               </div>
@@ -147,14 +96,12 @@ export function GallerySection() {
               <img
                 src={activeSlide?.src}
                 alt={activeSlide?.alt ?? 'Gallery image'}
-                className="w-full h-[420px] md:h-[520px] object-contain bg-white"
+                className="w-full h-[55vh] md:h-[520px] min-h-[420px] max-h-[620px] object-contain bg-white"
                 onError={(e) => {
-                  e.currentTarget.src = '/hero-thailand.jpg'
+                  e.currentTarget.src = slides[0]?.src
                 }}
               />
             </div>
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
           </motion.div>
 
           {/* Thumbnail strip */}
@@ -178,7 +125,7 @@ export function GallerySection() {
                       alt={s.alt}
                       className="h-20 md:h-24 w-full object-contain bg-white"
                       onError={(e) => {
-                        e.currentTarget.src = '/hero-thailand.jpg'
+                        e.currentTarget.src = slides[0]?.src
                       }}
                     />
                     <div
